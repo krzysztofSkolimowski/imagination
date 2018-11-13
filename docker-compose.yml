@@ -3,9 +3,6 @@ version: '3'
 services:
   server:
     image: golang:1.11-alpine3.7
-    #    build:
-    #      context: .
-    #      dockerfile: Dockerfile
     links:
     - "minio:minio"
     - "mysql:mysql"
