@@ -1,7 +1,46 @@
 version: '3'
 
 services:
-  app:
+  server:
     image: golang:1.11-alpine3.7
+    #    build:
+    #      context: .
+    #      dockerfile: Dockerfile
+    links:
+    - "minio:minio"
+    - "mysql:mysql"
+    volumes:
+    - uploads:$IMAGINATION_UPLOADS_DIR
+    - .:/go/src/imagination
+    working_dir: "$GO_PROJECT_DIR"
+    command: go run cmd/main.go
+    ports:
+    - "8080:8080"
+    env_file:
+    - .env
 
+  minio:
+    image: minio/minio
+    volumes:
+    - minio:/data
+    ports:
+    - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: "$IMAGINATION_AWS_ACCESS_KEY_ID"
+      MINIO_SECRET_KEY: "$IMAGINATION_AWS_SECRET_ACCESS_KEY"
+    command: server /data
 
+  mysql:
+    image: mysql
+    volumes:
+    - db_data:/var/lib/mysql
+    restart: always
+    ports:
+    - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "topsecret"
+
+volumes:
+  uploads: {}
+  minio: {}
+  db_data: {}
