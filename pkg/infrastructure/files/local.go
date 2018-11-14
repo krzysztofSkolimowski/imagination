@@ -15,6 +15,10 @@ var (
 	ErrCannotSaveFile = errors.New("cannot save file")
 )
 
+type Validator interface {
+	Validate(r io.Reader) error
+}
+
 type LocalFileService struct {
 	uploadsDir string
 	validators []Validator
