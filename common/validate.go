@@ -6,6 +6,7 @@ import (
 	"reflect"
 )
 
+//todo - remove if won't be necessary
 func HasNoEmptyFields(object interface{}) (err error) {
 	value := reflect.ValueOf(object)
 

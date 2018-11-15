@@ -29,8 +29,8 @@ type Service struct {
 	availableTransforms map[transform]interface{}
 }
 
-func NewService(r resolver, fs fileService, transforms map[transform]interface{}) Service {
-	return Service{r, fs, transforms}
+func NewService(r resolver, fs fileService, availableTransforms map[transform]interface{}) *Service {
+	return &Service{r, fs, availableTransforms}
 }
 
 type ProcessCmd struct {
