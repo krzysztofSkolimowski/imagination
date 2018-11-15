@@ -8,8 +8,8 @@ services:
     - "mysql:mysql"
     volumes:
     - uploads:$IMAGINATION_UPLOADS_DIR
-    - .:/go/src/imagination
-    working_dir: "$GO_PROJECT_DIR"
+    - .:$IMAGINATION_GO_PROJECT_DIR
+    working_dir: "$IMAGINATION_GO_PROJECT_DIR"
     command: go run cmd/main.go
     ports:
     - "8080:8080"

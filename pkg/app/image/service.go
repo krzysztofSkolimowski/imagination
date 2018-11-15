@@ -14,10 +14,10 @@ type fileService interface {
 	CopyFile(srcFileID string, destFileID string, public bool) error
 }
 
-type accessControlFileService interface {
-	fileService
-	SavePrivateFile(fileID string, r io.Reader) error
-}
+//type accessControlFileService interface {
+//	fileService
+//	SavePrivateFile(fileID string, r io.Reader) error
+//}
 
 type resolver interface {
 	Resolve(fileID string) string

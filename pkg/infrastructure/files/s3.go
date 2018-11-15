@@ -2,7 +2,7 @@ package files
 
 import (
 	"bytes"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/url"
 	"path"
@@ -23,16 +23,16 @@ type S3FileService struct {
 	service  *s3.S3
 	bucket   string
 	//todo - replace logger with proper abstraction
-	logger log.Logger
+	logger logrus.Logger
 }
 
-func NewS3FileService(u *s3manager.Uploader, service *s3.S3, bucket string, l log.Logger) S3FileService {
+func NewS3FileService(u *s3manager.Uploader, service *s3.S3, bucket string, l logrus.Logger) S3FileService {
 	return S3FileService{u, service, bucket, l}
 }
 
-func (fs S3FileService) SavePrivateFile(fileID string, r io.Reader) error {
-	return fs.saveFile(fileID, r, false)
-}
+//func (fs S3FileService) SavePrivateFile(fileID string, r io.Reader) error {
+//	return fs.saveFile(fileID, r, false)
+//}
 
 func (fs S3FileService) SaveFile(fileID string, r io.Reader) error {
 	return fs.saveFile(fileID, r, true)
@@ -49,7 +49,7 @@ func (fs S3FileService) saveFile(fileID string, r io.Reader, public bool) error 
 
 	contentType := mimeType.MIME.Value
 
-	fs.logger.WithFields(log.Fields{
+	fs.logger.WithFields(logrus.Fields{
 		"file":         fileID,
 		"content_type": contentType,
 		"public":       public,
@@ -81,7 +81,7 @@ func (fs S3FileService) LoadFile(fileID string) (io.ReadCloser, int, error) {
 		Key:    aws.String(fileID),
 	}
 
-	fs.logger.WithFields(log.Fields{
+	fs.logger.WithFields(logrus.Fields{
 		"file": fileID,
 	}).Info("Downloading file from S3")
 
@@ -104,7 +104,7 @@ func (fs S3FileService) DeleteFile(fileID string) error {
 		Key:    aws.String(fileID),
 	}
 
-	fs.logger.WithFields(log.Fields{
+	fs.logger.WithFields(logrus.Fields{
 		"file": fileID,
 	}).Info("Deleting file from S3")
 
@@ -172,7 +172,7 @@ func (fs S3FileService) deleteFiles(files []string) error {
 		objects = append(objects, &s3.ObjectIdentifier{
 			Key: aws.String(file),
 		})
-		fs.logger.WithFields(log.Fields{
+		fs.logger.WithFields(logrus.Fields{
 			"file": file,
 		}).Debug("Deleting file from S3")
 	}
@@ -221,7 +221,7 @@ func (fs S3FileService) CopyFile(srcFileID string, destFileID string, public boo
 		params.ACL = aws.String("public-read")
 	}
 
-	fs.logger.WithFields(log.Fields{
+	fs.logger.WithFields(logrus.Fields{
 		"source_file": srcFileID,
 		"dest_file":   destFileID,
 		"public":      public,

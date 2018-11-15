@@ -35,7 +35,7 @@ func RequestLogger(logger log.Logger) func(next http.Handler) http.Handler {
 						"written":   wrapWriter.written,
 						"Referer":   r.Referer(),
 						"UserAgent": r.UserAgent(),
-					})
+					}).Info("REQUEST")
 			}()
 		}
 

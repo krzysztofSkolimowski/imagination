@@ -2,26 +2,33 @@ package main
 
 import (
 	"context"
-	"github.com/gorilla/mux"
+	"github.com/krzysztofSkolimowski/imagination/cmd/modules"
+	"github.com/krzysztofSkolimowski/imagination/common"
+	"github.com/krzysztofSkolimowski/imagination/common/middleware"
+	"github.com/krzysztofSkolimowski/imagination/pkg/interfaces/rest"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func main() {
-	config := Config{}
+	config := modules.Config{}
 	config.LoadConfig()
-
-	//todo - give proper abstraction to logger
-	logger := log.New()
-
-	r := mux.NewRouter()
-
-	logger.Println("Service started")
-
-	logger.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(runServer(config))
 }
 
-func runServer(config Config) {
+func runServer(config modules.Config) error {
 	ctx := context.Background()
-	//m, cancel := 
+
+	services, cancel := modules.SetupImaginationServices(ctx)
+	defer cancel()
+
+	r := common.NewRouter()
+	rest.AddImageResource(services, r)
+
+	log.Info("Starting imagination")
+	return 	http.ListenAndServe(
+		":" + config.Port,
+		middleware.RequestLogger(*services.Logger)(r),
+	)
+
 }

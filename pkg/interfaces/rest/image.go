@@ -2,20 +2,19 @@ package rest
 
 import (
 	"fmt"
-	"imagination/common"
+	"github.com/krzysztofSkolimowski/imagination/cmd/modules"
+	"github.com/krzysztofSkolimowski/imagination/common"
 	"net/http"
 )
 
-func AddImageResource(r *common.Router) {
-	//r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	//
-	//	fmt.Fprint(w, "Release your imagination")
-	//}).Methods("GET")
-
-	r.Route("/", releaseYourImagination, "GET")
-
+func AddImageResource(svc *modules.ImaginationServices, r *common.Router) {
+	r.Route("/", releaseYourImagination(svc), "GET")
 }
 
-func releaseYourImagination(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(w, "Release your imagination")
+//debug method written in order to check if server works
+func releaseYourImagination(svc *modules.ImaginationServices) func(w http.ResponseWriter, r *http.Request) {
+	handleFunc := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "release your imagination")
+	}
+	return handleFunc
 }

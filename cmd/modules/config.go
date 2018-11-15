@@ -1,10 +1,11 @@
-package main
+package modules
 
 import "os"
 
 type Config struct {
-	UploadsDir        string
-	LogsDir           string
+	Port       string
+	UploadsDir string
+	LogsDir    string
 
 	S3Bucket          string
 	S3Region          string
@@ -12,15 +13,16 @@ type Config struct {
 	S3AccessKeyId     string
 	S3SecretAccessKey string
 
-	S3MinioEnabled    string
-	S3MinioUrl        string
+	S3MinioEnabled string
+	S3MinioUrl     string
 
-	MysqlPort         string
-	MysqlUser         string
-	MysqlPassword     string
+	MysqlPort     string
+	MysqlUser     string
+	MysqlPassword string
 }
 
 func (c *Config) LoadConfig() {
+	c.Port = os.Getenv("IMAGINATION_PORT")
 	c.UploadsDir = os.Getenv("IMAGINATION_UPLOADS_DIR")
 	c.LogsDir = os.Getenv("IMAGINATION_LOGS_DIR")
 	c.S3Bucket = os.Getenv("IMAGINATION_AWS_S3_BUCKET")
