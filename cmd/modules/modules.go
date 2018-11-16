@@ -13,56 +13,71 @@ import (
 )
 
 type Services struct {
-	Logger *logrus.Logger
+	Common commonServices
+	Infra  infraServices
+	App    appServices
+}
 
-	S3 *struct {
-		Service  *s3.S3
-		Uploader *s3manager.Uploader
-	}
+type commonServices struct {
+	Logger       *logrus.Logger
+	URLResolver  *files.URLResolver
+	PathResolver *files.PathResolver
+}
 
-	//URLResolver files.URLResolver
+type infraServices struct {
+	S3Service  *s3.S3
+	S3Uploader *s3manager.Uploader
+}
 
+type appServices struct {
 	ImageService *image.Service
 }
 
-func SetupImaginationServices(ctx context.Context, config Config) (*Services, context.CancelFunc) {
+func SetupServices(ctx context.Context, config Config) (*Services, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
 	services := &Services{}
 
-	logger := logrus.New()
+	services.initializeCommon(ctx, config)
+	services.initializeInfrastructure(ctx, config)
+	services.initializeApp(ctx, config)
 
-	services.Logger = logger
+	return services, cancel
+}
+
+func (svc *Services) initializeCommon(ctx context.Context, config Config) {
+	svc.Common.Logger = logrus.New()
 
 	pathResolver, err := files.NewPathResolver(config.UploadsDir)
 	if err != nil {
 		panic(err)
 	}
+	svc.Common.PathResolver = &pathResolver
 
 	urlResolver, err := files.NewURLResolver(config.S3Base_url)
 	if err != nil {
 		panic(err)
 	}
-
-	services.initializeS3(config)
-
-	services.ImageService = image.NewService(
-		pathResolver, urlResolver,
-		files.NewLocalFileService(config.UploadsDir, []files.Validator{}),
-		files.NewS3FileService(services.S3.Uploader, services.S3.Service, config.S3Bucket, *services.Logger),
-		map[image.Transform]interface{}{
-			image.Transform("crop"):    nil,
-			image.Transform("rot_90"):  nil,
-			image.Transform("rot_180"): nil,
-			image.Transform("rm_exif"): nil,
-		},
-	)
-
-	return services, cancel
+	svc.Common.URLResolver = &urlResolver
 }
 
 //todo check nil pointer
-func (svc *Services) initializeS3(config Config) {
-	c := &aws.Config{
+//func (svc *Services) initializeS3(config Config) {
+//
+//
+//	fmt.Println("...................")
+//	fmt.Println(uploader)
+//	fmt.Println(service)
+//	svc.S3.Uploader = uploader
+	//svc.S3.Uploader = uploader
+	//svc.S3.Service = service
+	//svc.S3 = struct {
+	//}{}
+	//fmt.Println(svc.S3.Uploader)
+	//fmt.Println("...................")
+//}
+
+func (svc *Services) initializeInfrastructure(ctx context.Context, config Config) {
+	awsConfig := &aws.Config{
 		Region: aws.String(config.S3Region),
 		Credentials: credentials.NewStaticCredentials(
 			config.S3AccessKeyId,
@@ -72,16 +87,30 @@ func (svc *Services) initializeS3(config Config) {
 	}
 
 	if config.S3MinioEnabled {
-		c.Endpoint = aws.String(config.S3MinioUrl)
-		c.DisableSSL = aws.Bool(true)
-		c.S3ForcePathStyle = aws.Bool(true)
+		awsConfig.Endpoint = aws.String(config.S3MinioUrl)
+		awsConfig.DisableSSL = aws.Bool(true)
+		awsConfig.S3ForcePathStyle = aws.Bool(true)
 	}
 
-	sess, err := session.NewSession(c)
+	sess, err := session.NewSession(awsConfig)
 	if err != nil {
 		panic(err)
 	}
+//	todo - initilize s3
 
-	svc.S3.Uploader = s3manager.NewUploader(sess)
-	svc.S3.Service = s3.New(sess)
+}
+
+func (svc *Services) initializeApp(ctx context.Context, config Config) {
+	svc.App.ImageService = image.NewService(
+		svc.Common.PathResolver, svc.Common.URLResolver,
+		files.NewLocalFileService(config.UploadsDir, []files.Validator{}),
+		files.NewS3FileService(svc.Infra.S3Uploader, svc.Infra.S3Service, config.S3Bucket, *svc.Common.Logger),
+		map[image.Transform]interface{}{
+			image.Transform("crop"):    nil,
+			image.Transform("rot_90"):  nil,
+			image.Transform("rot_180"): nil,
+			image.Transform("rm_exif"): nil,
+		},
+	)
+
 }
