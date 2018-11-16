@@ -2,6 +2,9 @@ package modules
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/krzysztofSkolimowski/imagination/pkg/app/image"
@@ -24,7 +27,7 @@ type Services struct {
 
 func SetupImaginationServices(ctx context.Context, config Config) (*Services, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
-	services := Services{}
+	services := &Services{}
 
 	logger := logrus.New()
 
@@ -40,9 +43,10 @@ func SetupImaginationServices(ctx context.Context, config Config) (*Services, co
 		panic(err)
 	}
 
+	services.initializeS3(config)
+
 	services.ImageService = image.NewService(
 		pathResolver, urlResolver,
-		//todo - validators
 		files.NewLocalFileService(config.UploadsDir, []files.Validator{}),
 		files.NewS3FileService(services.S3.Uploader, services.S3.Service, config.S3Bucket, *services.Logger),
 		map[image.Transform]interface{}{
@@ -53,5 +57,31 @@ func SetupImaginationServices(ctx context.Context, config Config) (*Services, co
 		},
 	)
 
-	return &services, cancel
+	return services, cancel
+}
+
+//todo check nil pointer
+func (svc *Services) initializeS3(config Config) {
+	c := &aws.Config{
+		Region: aws.String(config.S3Region),
+		Credentials: credentials.NewStaticCredentials(
+			config.S3AccessKeyId,
+			config.S3SecretAccessKey,
+			"",
+		),
+	}
+
+	if config.S3MinioEnabled {
+		c.Endpoint = aws.String(config.S3MinioUrl)
+		c.DisableSSL = aws.Bool(true)
+		c.S3ForcePathStyle = aws.Bool(true)
+	}
+
+	sess, err := session.NewSession(c)
+	if err != nil {
+		panic(err)
+	}
+
+	svc.S3.Uploader = s3manager.NewUploader(sess)
+	svc.S3.Service = s3.New(sess)
 }

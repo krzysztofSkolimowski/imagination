@@ -13,7 +13,7 @@ type Config struct {
 	S3AccessKeyId     string
 	S3SecretAccessKey string
 
-	S3MinioEnabled string
+	S3MinioEnabled bool
 	S3MinioUrl     string
 
 	MysqlPort     string
@@ -30,7 +30,9 @@ func (c *Config) LoadConfig() {
 	c.S3Base_url = os.Getenv("IMAGINATION_AWS_S3_BASE_URL")
 	c.S3AccessKeyId = os.Getenv("IMAGINATION_AWS_ACCESS_KEY_ID")
 	c.S3SecretAccessKey = os.Getenv("IMAGINATION_AWS_SECRET_ACCESS_KEY")
-	c.S3MinioEnabled = os.Getenv("IMAGINATION_AWS_S3_MINIO_ENABLED")
+	if os.Getenv("IMAGINATION_AWS_S3_MINIO_ENABLED") == "1" {
+		c.S3MinioEnabled = true
+	}
 	c.S3MinioUrl = os.Getenv("IMAGINATION_AWS_S3_MINIO_URL")
 	c.MysqlPort = os.Getenv("IMAGINATION_MYSQL_PORT")
 	c.MysqlUser = os.Getenv("IMAGINATION_MYSQL_USER")

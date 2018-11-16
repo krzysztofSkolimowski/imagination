@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:50a443c94709e42b6e089faa92ec07b0d34496835f114d00eb4c975df145b047"
+  digest = "1:668c881615c94edd6932ddf9b6cc4eea76f4cb4115d47a60c78425ba32f25ee9"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -10,14 +10,23 @@
     "aws/awsutil",
     "aws/client",
     "aws/client/metadata",
+    "aws/corehandlers",
     "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
     "aws/endpoints",
     "aws/request",
+    "aws/session",
     "aws/signer/v4",
     "internal/ini",
     "internal/s3err",
     "internal/sdkio",
     "internal/sdkrand",
+    "internal/sdkuri",
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/eventstream",
@@ -30,6 +39,7 @@
     "service/s3",
     "service/s3/s3iface",
     "service/s3/s3manager",
+    "service/sts",
   ]
   pruneopts = "UT"
   revision = "ab1e4ad20b12ab0df8a825805de3e48ad6c59d28"
@@ -73,14 +83,6 @@
   pruneopts = "UT"
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
-
-[[projects]]
-  digest = "1:41b00533ad3d8b3f54b6a02fc093b211feeffb068a3148a7e7084cd7aeef18ec"
-  name = "github.com/magiconair/properties"
-  packages = ["assert"]
-  pruneopts = "UT"
-  revision = "c2353362d570a7bfa228149c62842019201cfb71"
-  version = "v1.8.0"
 
 [[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
@@ -153,12 +155,14 @@
   analyzer-version = 1
   input-imports = [
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/credentials",
+    "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/gorilla/mux",
-    "github.com/magiconair/properties/assert",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
+    "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "gopkg.in/h2non/filetype.v1",
   ]
