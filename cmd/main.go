@@ -19,7 +19,7 @@ func main() {
 func runServer(config modules.Config) error {
 	ctx := context.Background()
 
-	services, cancel := modules.SetupImaginationServices(ctx)
+	services, cancel := modules.SetupImaginationServices(ctx, config)
 	defer cancel()
 
 	r := common.NewRouter()

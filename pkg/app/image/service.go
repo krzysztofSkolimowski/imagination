@@ -1,10 +1,11 @@
 package image
 
 import (
+	"fmt"
 	"io"
 )
 
-type transform string
+type Transform string
 
 type fileService interface {
 	SaveFile(fileID string, r io.Reader) error
@@ -24,24 +25,34 @@ type resolver interface {
 }
 
 type Service struct {
-	resolver            resolver
-	fileService         fileService
-	availableTransforms map[transform]interface{}
+	pathResolver, urlResolver      resolver
+	localFileService, cloudStorage fileService
+	availableTransforms            map[Transform]interface{}
 }
 
-func NewService(r resolver, fs fileService, availableTransforms map[transform]interface{}) *Service {
-	return &Service{r, fs, availableTransforms}
+func NewService(
+	pathResolver, urlResolver resolver,
+	localFileService, cloudStorage fileService,
+	availableTransforms map[Transform]interface{},
+) *Service {
+	return &Service{
+		pathResolver, urlResolver,
+		localFileService, cloudStorage,
+		availableTransforms,
+	}
 }
 
 type ProcessCmd struct {
-	//todo - refactor to uuids
-	ID         int64
 	File       []byte
-	transforms []transform
+	FileName   string
+	transforms []Transform
 }
 
 func (s Service) Process(cmd ProcessCmd) error {
 	//todo - validate file
+	fmt.Println("=============================")
+	fmt.Println("processing image")
+	fmt.Println("=============================")
 	//todo - check transforms
 	//todo - saveFile on temporary path
 	//todo - defer remove file
