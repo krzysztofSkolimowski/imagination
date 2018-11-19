@@ -27,16 +27,16 @@ services:
       MINIO_SECRET_KEY: "$IMAGINATION_AWS_SECRET_ACCESS_KEY"
     command: server /data
 
-  mysql:
-    image: mysql
-    volumes:
-    - db_data:/var/lib/mysql
-    restart: always
-    ports:
-    - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: "topsecret"
-
+#  mysql:
+#    image: mysql
+#    volumes:
+#    - db_data:/var/lib/mysql
+#    restart: always
+#    ports:
+#    - "3306:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "topsecret"
+#
 volumes:
   uploads: {}
   minio: {}
