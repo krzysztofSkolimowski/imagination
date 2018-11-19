@@ -38,6 +38,11 @@ func runServer(config modules.Config) error {
 			"rot_180",
 			"rm_exif",
 		},
+		[]image.Format{
+			"png",
+			"jpeg",
+			"jpg",
+		},
 	)
 	if err != nil {
 		panic(err)

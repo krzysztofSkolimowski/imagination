@@ -11,7 +11,7 @@ import (
 
 func AddImageResource(svc *modules.Services, r *common.Router) {
 	r.Route("/", releaseYourImagination(svc), http.MethodGet)
-	r.Route("/image", uploadImage(svc), http.MethodPost)
+	r.Route("/image", processImage(svc), http.MethodPost)
 }
 
 //debug method written in order to check if server works
@@ -21,7 +21,7 @@ func releaseYourImagination(svc *modules.Services) func(w http.ResponseWriter, r
 	}
 }
 
-func uploadImage(svc *modules.Services) func(w http.ResponseWriter, r *http.Request) {
+func processImage(svc *modules.Services) func(w http.ResponseWriter, r *http.Request) {
 	handleFunc := func(w http.ResponseWriter, r *http.Request) {
 		formFile, fileHeader, err := r.FormFile("file")
 		if err != nil {
@@ -41,8 +41,9 @@ func uploadImage(svc *modules.Services) func(w http.ResponseWriter, r *http.Requ
 		}
 
 		cmd := image.ProcessCmd{
-			File:     f,
-			FileName: fileHeader.Filename,
+			File:        f,
+			FileName:    fileHeader.Filename,
+			SaveToCloud: true,
 		}
 
 		if err := svc.ImageService.Process(cmd); err != nil {

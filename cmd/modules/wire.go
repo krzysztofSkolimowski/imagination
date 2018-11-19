@@ -46,6 +46,7 @@ func SetupServices(
 	minioURL files.MinioURL,
 	bucket files.Bucket,
 	transforms []image.Transform,
+	formats []image.Format,
 ) (*Services, error) {
 	wire.Build(providers)
 	return nil, nil

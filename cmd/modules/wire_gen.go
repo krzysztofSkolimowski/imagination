@@ -14,7 +14,7 @@ import (
 
 // Injectors from wire.go:
 
-func SetupServices(uploadsDir files.UploadsDir, baseURL files.BaseURL, validators []files.Validator, region files.AWSRegion, accessKeyID files.AWSAccessKeyID, secretAccessKey files.AWSSecretAccessKey, minioEnabled files.MinioEnabled, minioURL files.MinioURL, bucket files.Bucket, transforms []image.Transform) (*Services, error) {
+func SetupServices(uploadsDir files.UploadsDir, baseURL files.BaseURL, validators []files.Validator, region files.AWSRegion, accessKeyID files.AWSAccessKeyID, secretAccessKey files.AWSSecretAccessKey, minioEnabled files.MinioEnabled, minioURL files.MinioURL, bucket files.Bucket, transforms []image.Transform, formats []image.Format) (*Services, error) {
 	pathResolver, err := files.NewPathResolver(uploadsDir)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func SetupServices(uploadsDir files.UploadsDir, baseURL files.BaseURL, validator
 	s3 := files.NewS3Service(session)
 	logger := logrus.New()
 	s3FileService := files.NewS3FileService(uploader, s3, bucket, logger)
-	service := image.NewService(pathResolver, urlResolver, localFileService, s3FileService, transforms)
+	service := image.NewService(pathResolver, urlResolver, localFileService, s3FileService, transforms, formats)
 	services := NewServices(service, logger)
 	return services, nil
 }
