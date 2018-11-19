@@ -5,7 +5,7 @@ services:
     image: golang:1.11-alpine3.7
     links:
     - "minio:minio"
-    - "mysql:mysql"
+#    - "mysql:mysql"
     volumes:
     - uploads:$IMAGINATION_UPLOADS_DIR
     - .:$IMAGINATION_GO_PROJECT_DIR
