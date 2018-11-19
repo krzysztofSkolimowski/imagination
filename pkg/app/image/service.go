@@ -85,17 +85,17 @@ type ProcessCmd struct {
 	Transforms  []string
 }
 
-func (s Service) Process(cmd ProcessCmd) error {
+func (s Service) Process(cmd ProcessCmd) ([]byte, error) {
 	imageURL := cmd.ImageURL
 	fileName := sanitize(imageURL)
 
 	if err := s.DownloadFile(fileName, imageURL); err != nil {
-		return errors.Wrap(err, "cannot download file")
+		return nil, errors.Wrap(err, "cannot download file")
 	}
 
 	f, _, err := s.localFileService.LoadFile(fileName)
 	if err != nil {
-		return errors.Wrap(err, "cannot load file")
+		return nil, errors.Wrap(err, "cannot load file")
 	}
 	defer func() {
 		//delete file as usage of local storage is only temporary
@@ -104,23 +104,23 @@ func (s Service) Process(cmd ProcessCmd) error {
 
 	fileBytes, err := ioutil.ReadAll(f)
 	if err != nil {
-		return errors.New("cannot read from file")
+		return nil, errors.New("cannot read from file")
 	}
 
 	_, sourceFormat, err := image.Decode(bytes.NewBuffer(fileBytes))
 	if err != nil {
-		return errors.Wrap(err, "cannot decode file")
+		return nil, errors.Wrap(err, "cannot decode file")
 	}
 
 	if _, ok := s.availableFormats[Format(sourceFormat)]; !ok {
-		return errors.New(fmt.Sprintf("Unsupported format: %v", sourceFormat))
+		return nil, errors.New(fmt.Sprintf("Unsupported format: %v", sourceFormat))
 	}
 
 	if cmd.SaveToCloud {
-		return s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(fileBytes))
+		return nil, s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(fileBytes))
 	}
 
-	return nil
+	return fileBytes, nil
 }
 
 func sanitize(fileName string) string {

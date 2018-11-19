@@ -1,11 +1,13 @@
 package rest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/krzysztofSkolimowski/imagination/cmd/modules"
 	"github.com/krzysztofSkolimowski/imagination/common"
 	"github.com/krzysztofSkolimowski/imagination/pkg/app/image"
+	"io"
 	"net/http"
 )
 
@@ -37,10 +39,14 @@ func processImage(svc *modules.Services) func(w http.ResponseWriter, r *http.Req
 			ImageURL:    request.ImageURL,
 		}
 
-		if err := svc.ImageService.Process(cmd); err != nil {
+
+		f, err := svc.ImageService.Process(cmd)
+		if  err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		io.Copy(w, bytes.NewBuffer(f))
 	}
 	return handleFunc
 }
