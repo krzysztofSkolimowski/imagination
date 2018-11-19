@@ -29,3 +29,12 @@ Simple service, capable of performing basic image transformations.
 ```$GOBIN/wire```
 
 
+## Application structure
+In order to minimize number of external dependencies, project follows rules of clean architecture and consists of three layers: 
+1. ```app```  - application - layer responsible for conducting actual processing and place of bussiness logic
+1. ```infrastructure``` Layer responsible for accessing every external services and types of storage from application
+1. ```interfaces``` Layer responsible for providing access to our service e.g. place to declare all kind of API
+
+Outside of this layers there exists common, which is a place to cover all external libraries with proper abstraction. At this point there still remains some of them (from earlier stage of development - e. g. `logrus.Loggger`), but all of external libraries should be moved to common in the future. 
+
+Moreover outside of layer also exists package cmd, which serves the purpose of providing necessary commands to start the application (and probably conduct scheduled jobs in the future).
