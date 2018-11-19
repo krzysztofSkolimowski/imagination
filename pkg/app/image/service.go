@@ -1,13 +1,13 @@
 package image
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	"net/http"
 	"path"
 )
 
@@ -78,42 +78,41 @@ func NewService(
 }
 
 type ProcessCmd struct {
-	File        []byte
-	FileName    string
+	ImageURL    string
 	SaveToCloud bool
-	Transforms  []Transform
+	Transforms  []string
 }
 
 func (s Service) Process(cmd ProcessCmd) error {
-	fileName := sanitize(cmd.FileName)
-	temporaryPath := s.pathResolver.Resolve(fileName)
-	if err := s.localFileService.SaveFile(temporaryPath, bytes.NewBuffer(cmd.File)); err != nil {
-		return err
+	imageURL := cmd.ImageURL
+	fileName := sanitize(imageURL)
+
+	if err := s.DownloadFile(fileName, imageURL); err != nil {
+		return errors.Wrap(err, "cannot download file")
 	}
 
-	_, sourceFormat, err := image.Decode(bytes.NewBuffer(cmd.File))
+	f, _, err := s.localFileService.LoadFile(fileName)
 	if err != nil {
-		return errors.Wrap(err, "Cannot decode provided image")
+		return errors.Wrap(err, "cannot load file")
+	}
+	defer func() {
+		//delete file as usage of local storage is only temporary
+		s.localFileService.DeleteFile(fileName)
+	}()
+
+	_, sourceFormat, err := image.Decode(f)
+	if err != nil {
+		return errors.Wrap(err, "cannot decode file")
 	}
 
 	if _, ok := s.availableFormats[Format(sourceFormat)]; !ok {
-		return errors.New("Unsupported format")
+		return errors.New(fmt.Sprintf("Unsupported format: %v", sourceFormat))
 	}
 
-	//todo - check transforms
-	for _, v := range cmd.Transforms {
-		if _, ok := s.availableTransforms[v]; ok {
-			fmt.Println("performing transform: ", v)
-		}
-	}
-	//todo - defer remove file
-	//todo - decode image
-
-	//todo - save to cloud or stream back
-	//paths := s.urlResolver.Resolve(fileName)
 	if cmd.SaveToCloud {
-		return s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(cmd.File))
+		s.cloudStorage.SaveFile(fileName, f)
 	}
+
 	return nil
 }
 
@@ -124,4 +123,20 @@ func sanitize(fileName string) string {
 		fileName = fileName[len(fileName)-maxLen:]
 	}
 	return fileName
+}
+
+func (s Service) DownloadFile(filePath string, url string) error {
+	//todo - move to infrastructure
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	err = s.localFileService.SaveFile(filePath, resp.Body)
+	if err != nil {
+		fmt.Println("error: ", err)
+		return err
+	}
+	return nil
 }

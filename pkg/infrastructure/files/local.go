@@ -75,14 +75,13 @@ func (fs LocalFileService) SaveFile(fileID string, r io.Reader) error {
 			return errors.Wrapf(err, "could not validate file %s", fileID)
 		}
 	}
-
 	return err
 }
 
 func (fs LocalFileService) SaveFromReader(filePath string, r io.Reader) (fsPath string, err error) {
 	filePath = path.Join(string(fs.uploadsDir), filePath)
-	dirpath := path.Dir(filePath)
-	if err := createDir(dirpath); err != nil {
+	dirPath := path.Dir(filePath)
+	if err := createDir(dirPath); err != nil {
 		return "", err
 	}
 

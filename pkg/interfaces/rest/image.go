@@ -1,11 +1,11 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/krzysztofSkolimowski/imagination/cmd/modules"
 	"github.com/krzysztofSkolimowski/imagination/common"
 	"github.com/krzysztofSkolimowski/imagination/pkg/app/image"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -23,40 +23,24 @@ func releaseYourImagination(svc *modules.Services) func(w http.ResponseWriter, r
 
 func processImage(svc *modules.Services) func(w http.ResponseWriter, r *http.Request) {
 	handleFunc := func(w http.ResponseWriter, r *http.Request) {
-		formFile, fileHeader, err := r.FormFile("file")
+		decoder := json.NewDecoder(r.Body)
+		var request PostProcessImageRequest
+		err := decoder.Decode(&request)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		defer func() {
-			if err := formFile.Close(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-		}()
-
-		f, err := ioutil.ReadAll(formFile)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
 		cmd := image.ProcessCmd{
-			File:        f,
-			FileName:    fileHeader.Filename,
-			SaveToCloud: true,
+			Transforms:  request.Transforms,
+			SaveToCloud: request.SaveToCloud,
+			ImageURL:    request.ImageURL,
 		}
 
 		if err := svc.ImageService.Process(cmd); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}
-	return handleFunc
-}
-
-func transform(svc *modules.Services) func(w http.ResponseWriter, r *http.Request) {
-	handleFunc := func(w http.ResponseWriter, r *http.Request) {
-
 	}
 	return handleFunc
 }
