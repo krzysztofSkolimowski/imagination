@@ -1,12 +1,14 @@
 package image
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"path"
 )
@@ -100,7 +102,12 @@ func (s Service) Process(cmd ProcessCmd) error {
 		s.localFileService.DeleteFile(fileName)
 	}()
 
-	_, sourceFormat, err := image.Decode(f)
+	fileBytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return errors.New("cannot read from file")
+	}
+
+	_, sourceFormat, err := image.Decode(bytes.NewBuffer(fileBytes))
 	if err != nil {
 		return errors.Wrap(err, "cannot decode file")
 	}
@@ -110,7 +117,7 @@ func (s Service) Process(cmd ProcessCmd) error {
 	}
 
 	if cmd.SaveToCloud {
-		s.cloudStorage.SaveFile(fileName, f)
+		s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(fileBytes))
 	}
 
 	return nil
