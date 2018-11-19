@@ -1,6 +1,7 @@
-package files
+package files_test
 
 import (
+	"github.com/krzysztofSkolimowski/imagination/pkg/infrastructure/files"
 	"github.com/pkg/errors"
 	"testing"
 )
@@ -47,7 +48,7 @@ func TestURLResolverValid(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			resolver, err := NewURLResolver(c.BaseURL)
+			resolver, err := files.NewURLResolver(files.BaseURL(c.BaseURL))
 			if errors.Cause(c.ExpectedError) != c.ExpectedError {
 				t.Fatalf("Expected: %v, got %v", c.ExpectedError, err)
 			}
