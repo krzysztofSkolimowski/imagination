@@ -8,14 +8,16 @@ import (
 
 var ErrFailedToParseURL = errors.New("Failed to parse URL")
 
+type BaseURL string
+
 type URLResolver struct {
 	baseURL *url.URL
 }
 
-func NewURLResolver(baseURL string) (URLResolver, error) {
-	parsedURL, err := url.Parse(baseURL)
+func NewURLResolver(baseURL BaseURL) (URLResolver, error) {
+	parsedURL, err := url.Parse(string(baseURL))
 	if err != nil {
-		return URLResolver{}, errors.Wrapf(ErrFailedToParseURL, baseURL)
+		return URLResolver{}, errors.Wrapf(ErrFailedToParseURL, string(baseURL))
 	}
 	return URLResolver{baseURL: parsedURL}, nil
 }

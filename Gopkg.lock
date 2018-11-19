@@ -54,6 +54,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:f5719c7e7406baad903f8f4a9ebfb97bc210f5b961f6be93240a885aeb10e32d"
+  name = "github.com/google/go-cloud"
+  packages = ["wire"]
+  pruneopts = "UT"
+  revision = "2152f209f3c907645f7ebdcacdb2c18cd89e6fa8"
+  version = "0.5.0"
+
+[[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -159,6 +167,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/s3/s3manager",
+    "github.com/google/go-cloud/wire",
     "github.com/gorilla/mux",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",

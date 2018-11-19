@@ -15,12 +15,10 @@ var (
 	ErrCannotSaveFile = errors.New("cannot save file")
 )
 
-type Validator interface {
-	Validate(r io.Reader) error
-}
+type Validator interface{ Validate(r io.Reader) error }
 
 type LocalFileService struct {
-	uploadsDir string
+	uploadsDir UploadsDir
 	validators []Validator
 }
 
@@ -29,8 +27,8 @@ func (fs LocalFileService) CopyFile(srcFileID string, destFileID string, public 
 	panic("implement me")
 }
 
-func NewLocalFileService(uploadsDir string, validators []Validator) LocalFileService {
-	if uploadsDir == "" {
+func NewLocalFileService(uploadsDir UploadsDir, validators []Validator) LocalFileService {
+	if string(uploadsDir) == "" {
 		panic(ErrUploadsDirEmpty)
 	}
 
@@ -82,7 +80,7 @@ func (fs LocalFileService) SaveFile(fileID string, r io.Reader) error {
 }
 
 func (fs LocalFileService) SaveFromReader(filePath string, r io.Reader) (fsPath string, err error) {
-	filePath = path.Join(fs.uploadsDir, filePath)
+	filePath = path.Join(string(fs.uploadsDir), filePath)
 	dirpath := path.Dir(filePath)
 	if err := createDir(dirpath); err != nil {
 		return "", err
@@ -114,15 +112,15 @@ func createDir(dirPath string) error {
 }
 
 func (fs LocalFileService) DeleteFile(fileID string) error {
-	return os.Remove(path.Join(fs.uploadsDir, fileID))
+	return os.Remove(path.Join(string(fs.uploadsDir), fileID))
 }
 
 func (fs LocalFileService) DeleteDirectory(directory string) error {
-	return os.RemoveAll(path.Join(fs.uploadsDir, directory))
+	return os.RemoveAll(path.Join(string(fs.uploadsDir), directory))
 }
 
 func (fs LocalFileService) LoadFile(fileID string) (io.ReadCloser, int, error) {
-	f, err := os.Open(path.Join(fs.uploadsDir, fileID))
+	f, err := os.Open(path.Join(string(fs.uploadsDir), fileID))
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "cannot open file")
 	}

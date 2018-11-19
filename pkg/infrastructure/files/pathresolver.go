@@ -4,18 +4,20 @@ import (
 	"path"
 )
 
+type UploadsDir string
+
 type PathResolver struct {
-	uploadsDir string
+	uploadsDir UploadsDir
 }
 
-func NewPathResolver(uploadsDir string) (PathResolver, error) {
-	if uploadsDir == "" {
+func NewPathResolver(u UploadsDir) (PathResolver, error) {
+	if string(u) == "" {
 		return PathResolver{}, ErrUploadsDirEmpty
 	}
 
-	return PathResolver{uploadsDir}, nil
+	return PathResolver{u}, nil
 }
 
 func (p PathResolver) Resolve(fileID string) string {
-	return path.Join(p.uploadsDir, fileID)
+	return path.Join(string(p.uploadsDir), fileID)
 }

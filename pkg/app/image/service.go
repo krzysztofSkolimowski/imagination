@@ -7,7 +7,7 @@ import (
 
 type Transform string
 
-type fileService interface {
+type LocalFileService interface {
 	SaveFile(fileID string, r io.Reader) error
 	LoadFile(fileID string) (io.ReadCloser, int, error)
 	DeleteFile(fileID string) error
@@ -15,30 +15,49 @@ type fileService interface {
 	CopyFile(srcFileID string, destFileID string, public bool) error
 }
 
-//type accessControlFileService interface {
-//	fileService
-//	SavePrivateFile(fileID string, r io.Reader) error
-//}
+type CloudStorage interface {
+	SaveFile(fileID string, r io.Reader) error
+	LoadFile(fileID string) (io.ReadCloser, int, error)
+	DeleteFile(fileID string) error
+	DeleteDirectory(directory string) error
+	CopyFile(srcFileID string, destFileID string, public bool) error
+}
 
-type resolver interface {
+type PathResolver interface {
+	Resolve(fileID string) string
+}
+
+type URLResolver interface {
 	Resolve(fileID string) string
 }
 
 type Service struct {
-	pathResolver, urlResolver      resolver
-	localFileService, cloudStorage fileService
-	availableTransforms            map[Transform]interface{}
+	pathResolver        PathResolver
+	urlResolver         URLResolver
+	localFileService    LocalFileService
+	cloudStorage        CloudStorage
+	availableTransforms map[Transform]struct{}
 }
 
 func NewService(
-	pathResolver, urlResolver resolver,
-	localFileService, cloudStorage fileService,
-	availableTransforms map[Transform]interface{},
+	pathResolver PathResolver,
+	urlResolver URLResolver,
+	localFileService LocalFileService,
+	cloudStorage CloudStorage,
+	available []Transform,
 ) *Service {
+	transforms := make(map[Transform]struct{}, len(available))
+
+	for _, v := range available {
+		transforms[v] = struct{}{}
+	}
+
 	return &Service{
-		pathResolver, urlResolver,
-		localFileService, cloudStorage,
-		availableTransforms,
+		pathResolver,
+		urlResolver,
+		localFileService,
+		cloudStorage,
+		transforms,
 	}
 }
 

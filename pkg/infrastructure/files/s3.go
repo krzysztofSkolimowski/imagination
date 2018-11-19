@@ -18,21 +18,19 @@ import (
 
 var ErrInvalidDirectory = errors.New("invalid directory")
 
+type Bucket string
+
 type S3FileService struct {
 	uploader *s3manager.Uploader
 	service  *s3.S3
-	bucket   string
+	bucket   Bucket
 	//todo - replace logger with proper abstraction
 	logger logrus.Logger
 }
 
-func NewS3FileService(u *s3manager.Uploader, service *s3.S3, bucket string, l logrus.Logger) S3FileService {
-	return S3FileService{u, service, bucket, l}
+func NewS3FileService(u *s3manager.Uploader, service *s3.S3, bucket Bucket, l *logrus.Logger) S3FileService {
+	return S3FileService{u, service, bucket, *l}
 }
-
-//func (fs S3FileService) SavePrivateFile(fileID string, r io.Reader) error {
-//	return fs.saveFile(fileID, r, false)
-//}
 
 func (fs S3FileService) SaveFile(fileID string, r io.Reader) error {
 	return fs.saveFile(fileID, r, true)
@@ -57,7 +55,7 @@ func (fs S3FileService) saveFile(fileID string, r io.Reader, public bool) error 
 
 	fileContent := io.MultiReader(&headerBuf, r)
 	uploadInput := &s3manager.UploadInput{
-		Bucket:      aws.String(fs.bucket),
+		Bucket:      aws.String(string(fs.bucket)),
 		Key:         aws.String(fileID),
 		Body:        fileContent,
 		ContentType: aws.String(contentType),
@@ -77,7 +75,7 @@ func (fs S3FileService) saveFile(fileID string, r io.Reader, public bool) error 
 
 func (fs S3FileService) LoadFile(fileID string) (io.ReadCloser, int, error) {
 	params := &s3.GetObjectInput{
-		Bucket: aws.String(fs.bucket),
+		Bucket: aws.String(string(fs.bucket)),
 		Key:    aws.String(fileID),
 	}
 
@@ -100,7 +98,7 @@ func (fs S3FileService) LoadFile(fileID string) (io.ReadCloser, int, error) {
 
 func (fs S3FileService) DeleteFile(fileID string) error {
 	params := &s3.DeleteObjectInput{
-		Bucket: aws.String(fs.bucket),
+		Bucket: aws.String(string(fs.bucket)),
 		Key:    aws.String(fileID),
 	}
 
@@ -154,7 +152,7 @@ func validateDirectory(dir string) error {
 
 func (fs S3FileService) findFilesWithPrefix(prefix string) ([]*s3.Object, error) {
 	params := &s3.ListObjectsInput{
-		Bucket: aws.String(fs.bucket),
+		Bucket: aws.String(string(fs.bucket)),
 		Prefix: aws.String(prefix),
 	}
 
@@ -178,7 +176,7 @@ func (fs S3FileService) deleteFiles(files []string) error {
 	}
 
 	deleteParams := &s3.DeleteObjectsInput{
-		Bucket: aws.String(fs.bucket),
+		Bucket: aws.String(string(fs.bucket)),
 		Delete: &s3.Delete{
 			Objects: objects,
 		},
@@ -210,11 +208,11 @@ func processChunks(objects []string, maxChunkSize int, processor func([]string) 
 	return nil
 }
 
-func (fs S3FileService) CopyFile(srcFileID string, destFileID string, public bool) error {
+func (fs S3FileService) CopyFile(srcFileID string, destinationFileID string, public bool) error {
 	params := &s3.CopyObjectInput{
-		Bucket:     aws.String(fs.bucket),
-		Key:        aws.String(destFileID),
-		CopySource: aws.String(url.QueryEscape(path.Join(fs.bucket, srcFileID))),
+		Bucket:     aws.String(string(fs.bucket)),
+		Key:        aws.String(destinationFileID),
+		CopySource: aws.String(url.QueryEscape(path.Join(string(fs.bucket), srcFileID))),
 	}
 
 	if public {
@@ -223,10 +221,9 @@ func (fs S3FileService) CopyFile(srcFileID string, destFileID string, public boo
 
 	fs.logger.WithFields(logrus.Fields{
 		"source_file": srcFileID,
-		"dest_file":   destFileID,
+		"dest_file":   destinationFileID,
 		"public":      public,
 	}).Debug("Copying file on S3")
-
 
 	if _, err := fs.service.CopyObject(params); err != nil {
 		return errors.Wrap(err, "failed to copy file")
