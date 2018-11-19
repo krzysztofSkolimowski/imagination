@@ -117,7 +117,7 @@ func (s Service) Process(cmd ProcessCmd) error {
 	}
 
 	if cmd.SaveToCloud {
-		s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(fileBytes))
+		return s.cloudStorage.SaveFile(fileName, bytes.NewBuffer(fileBytes))
 	}
 
 	return nil
