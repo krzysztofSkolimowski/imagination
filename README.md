@@ -1,4 +1,4 @@
-# imagination
+# Imagination
 Simple service, capable of performing basic image transformations.
 ### Project is currently under development
 
